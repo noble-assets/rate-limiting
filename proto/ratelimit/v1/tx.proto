@@ -10,6 +10,8 @@ option go_package = "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types";
 
 // Msg service for rate limit txs
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   // Gov tx to add a new rate limit
   rpc AddRateLimit(MsgAddRateLimit) returns (MsgAddRateLimitResponse);
   // Gov tx to update an existing rate limit
@@ -35,13 +37,13 @@ message MsgAddRateLimit {
   // MaxPercentSend defines the threshold for outflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_send = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // MaxPercentSend defines the threshold for inflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_recv = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // DurationHours specifies the number of hours before the rate limit
@@ -65,13 +67,13 @@ message MsgUpdateRateLimit {
   // MaxPercentSend defines the threshold for outflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_send = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // MaxPercentSend defines the threshold for inflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_recv = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // DurationHours specifies the number of hours before the rate limit
