@@ -3,15 +3,16 @@ package keeper
 import (
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
+	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 )
 
 // Stores/Updates a rate limit object in the store
 func (k Keeper) SetRateLimit(ctx sdk.Context, rateLimit types.RateLimit) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
 	rateLimitKey := types.GetRateLimitItemKey(rateLimit.Path.Denom, rateLimit.Path.ChannelId)
 	rateLimitValue := k.cdc.MustMarshal(&rateLimit)
@@ -21,14 +22,16 @@ func (k Keeper) SetRateLimit(ctx sdk.Context, rateLimit types.RateLimit) {
 
 // Removes a rate limit object from the store using denom and channel-id
 func (k Keeper) RemoveRateLimit(ctx sdk.Context, denom string, channelId string) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 	rateLimitKey := types.GetRateLimitItemKey(denom, channelId)
 	store.Delete(rateLimitKey)
 }
 
 // Grabs and returns a rate limit object from the store using denom and channel-id
 func (k Keeper) GetRateLimit(ctx sdk.Context, denom string, channelId string) (rateLimit types.RateLimit, found bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
 	rateLimitKey := types.GetRateLimitItemKey(denom, channelId)
 	rateLimitValue := store.Get(rateLimitKey)
@@ -43,7 +46,8 @@ func (k Keeper) GetRateLimit(ctx sdk.Context, denom string, channelId string) (r
 
 // Returns all rate limits stored
 func (k Keeper) GetAllRateLimits(ctx sdk.Context) []types.RateLimit {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()

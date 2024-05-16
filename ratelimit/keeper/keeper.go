@@ -3,22 +3,20 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-
+	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 )
 
 type (
 	Keeper struct {
-		storeKey   storetypes.StoreKey
-		cdc        codec.BinaryCodec
-		paramstore paramtypes.Subspace
-		authority  string
+		cdc          codec.BinaryCodec
+		storeService store.KVStoreService
+		paramstore   paramtypes.Subspace
+		authority    string
 
 		bankKeeper    types.BankKeeper
 		channelKeeper types.ChannelKeeper
@@ -28,7 +26,7 @@ type (
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	key storetypes.StoreKey,
+	storeService store.KVStoreService,
 	ps paramtypes.Subspace,
 	authority string,
 	bankKeeper types.BankKeeper,
@@ -37,7 +35,7 @@ func NewKeeper(
 ) *Keeper {
 	return &Keeper{
 		cdc:           cdc,
-		storeKey:      key,
+		storeService:  storeService,
 		paramstore:    ps,
 		authority:     authority,
 		bankKeeper:    bankKeeper,
@@ -46,11 +44,18 @@ func NewKeeper(
 	}
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
 // GetAuthority returns the module's authority.
 func (k Keeper) GetAuthority() string {
 	return k.authority
+}
+
+// SetIBCKeepers allows us to set the relevant IBC keepers post dependency
+// injection, as IBC doesn't support dependency injection yet.
+func (k *Keeper) SetIBCKeepers(channelKeeper types.ChannelKeeper, ics4Wrapper types.ICS4Wrapper) {
+	k.channelKeeper = channelKeeper
+	k.ics4Wrapper = ics4Wrapper
+}
+
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }

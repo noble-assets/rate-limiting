@@ -105,26 +105,19 @@ test-unit:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-containerProtoVer=0.14.0
-containerProtoImage=ghcr.io/cosmos/proto-builder:$(containerProtoVer)
+BUF_VERSION=1.31.0
+BUILDER_VERSION=0.14.0
 
-proto-all: proto-format proto-gen
-
-proto-gen:
-	@echo "Generating Protobuf files"
-	@$(DOCKER) run --user $(id -u):$(id -g) --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protocgen.sh; 
+proto-all: proto-format proto-lint proto-gen
 
 proto-format:
-	@echo "Formatting Protobuf files"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/docker-build-proto \
-		find ./proto -name "*.proto" -exec clang-format -i {} \;  
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		bufbuild/buf:$(BUF_VERSION) format --diff --write
 
-proto-swagger-gen:
-	@echo "Generating Protobuf Swagger"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protoc-swagger-gen.sh; 
+proto-gen:
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./proto/generate.sh
 
-proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=main
-
+proto-lint:
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		bufbuild/buf:$(BUF_VERSION) lint

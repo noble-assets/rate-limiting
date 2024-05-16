@@ -1,21 +1,21 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Stores the hour epoch
 func (k Keeper) SetHourEpoch(ctx sdk.Context, epoch types.HourEpoch) {
-	store := ctx.KVStore(k.storeKey)
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	epochBz := k.cdc.MustMarshal(&epoch)
 	store.Set(types.HourEpochKey, epochBz)
 }
 
 // Reads the hour epoch from the store
 func (k Keeper) GetHourEpoch(ctx sdk.Context) (epoch types.HourEpoch) {
-	store := ctx.KVStore(k.storeKey)
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
 	epochBz := store.Get(types.HourEpochKey)
 	if len(epochBz) == 0 {

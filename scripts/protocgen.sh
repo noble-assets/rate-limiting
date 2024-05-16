@@ -9,6 +9,7 @@ generate_protos() {
     for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
       if grep go_package "$file" &>/dev/null; then
         buf generate --template buf.gen.gogo.yaml "$file"
+        buf generate --template buf.gen.pulsar.yaml "$file"
       fi
     done
   done
